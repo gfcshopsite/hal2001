@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assistente Virtuale</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #000;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            background-image: url('https://i.gifer.com/7Kcm.gif');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .container {
+            text-align: center;
+            position: relative;
+        }
+
+        .assistant {
+            position: relative;
+            padding: 20px;
+            background: rgba(51, 51, 51, 0.8); /* Slightly transparent background for better readability */
+            border-radius: 10px;
+            display: inline-block;
+        }
+
+        #light {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 0, 0, 0.5);
+            opacity: 0;
+            border-radius: 10px;
+            transition: opacity 0.5s ease;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #444;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="assistant" class="assistant">
+            <div id="light"></div>
+            <p id="response">Ciao, come posso aiutarti?</p>
+        </div>
+        <button onclick="startListening()">Parla</button>
+    </div>
+    <script>
+        function speak(text) {
+            const speech = new SpeechSynthesisUtterance(text);
+            speechSynthesis.speak(speech);
+        }
+
+        function startListening() {
+            const light = document.getElementById('light');
+            const response = document.getElementById('response');
+
+            // Accende la luce rossa
+            light.style.opacity = '1';
+
+            // Imposta il testo dell'assistente
+            response.textContent = 'Sto ascoltando...';
+
+            // Configura il riconoscimento vocale
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'it-IT';
+            recognition.interimResults = false;
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript.toLowerCase();
+                response.textContent = `Hai detto: ${transcript}`;
+                speak(`Hai detto: ${transcript}`);
+
+                // Controlla i comandi specifici
+                if (transcript.includes('youtube')) {
+                    window.open('https://www.youtube.com', '_blank');
+                }
+
+                // Spegne la luce rossa e interrompe il riconoscimento dopo aver eseguito il comando
+                setTimeout(() => {
+                    light.style.opacity = '0';
+                }, 2000);
+                recognition.stop();
+            };
+
+            recognition.onerror = function(event) {
+                response.textContent = 'Errore nel riconoscimento vocale.';
+                speak('Errore nel riconoscimento vocale.');
+                recognition.stop();
+            };
+
+            recognition.onend = function() {
+                // Assicurati di spegnere la luce rossa se l'ascolto termina senza errore
+                setTimeout(() => {
+                    light.style.opacity = '0';
+                }, 2000);
+            };
+
+            recognition.start();
+        }
+    </script>
+</body>
+</html>
